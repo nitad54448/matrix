@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Operations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0c0a09;
+            overflow: hidden;
+        }
+        .main-container {
+            display: flex;
+            height: calc(100vh - 65px);
+        }
+        #left-panel {
+            flex-basis: 320px;
+            flex-shrink: 0;
+            min-width: 250px;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        #resize-handle {
+            flex-basis: 6px;
+            flex-shrink: 0;
+            cursor: col-resize;
+            background-color: rgba(55, 65, 81, 0.5);
+            transition: background-color 0.2s ease;
+        }
+        #resize-handle:hover {
+            background-color: rgba(30, 144, 255, 0.7);
+        }
+        #right-panel {
+            flex-grow: 1;
+            min-width: 0;
+            background-color: #0c0a09;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .matrix-grid {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .matrix-cell {
+            width: 100%;
+            height: 40px;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #d1d5db;
+            text-align: center;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+        .result-cell {
+            width: 100%;
+            height: 40px;
+            background-color: #0c0a09;
+            border: 1px solid #4b5563;
+            color: #f3f4f6;
+            text-align: center;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #left-panel::-webkit-scrollbar { width: 8px; }
+        #left-panel::-webkit-scrollbar-track { background: #1f2937; }
+        #left-panel::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        #left-panel::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="text-gray-200 flex flex-col h-screen">
+
+    <header class="text-center py-4 bg-gray-900/80 border-b border-gray-700/50" style="flex-shrink: 0;">
+        <h1 class="text-2xl md:text-3xl text-white">Matrix Operations</h1>
+    </header>
+
+    <div class="main-container">
+        <!-- Left Control Panel -->
+        <div id="left-panel">
+            <div>
+                <h2 class="text-lg font-semibold text-white mb-3 border-b border-gray-600 pb-2">Controls</h2>
+                <div class="space-y-4">
+                    <!-- Matrix A Dimensions -->
+                    <div class="p-2 border border-gray-700 rounded-lg">
+                        <h3 class="font-semibold text-cyan-400">Matrix A</h3>
+                        <div>
+                            <label for="rowsA" class="block text-sm font-medium text-gray-300">Rows: <span id="rowsAValue">2</span></label>
+                            <input id="rowsA" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <label for="colsA" class="block text-sm font-medium text-gray-300">Columns: <span id="colsAValue">2</span></label>
+                            <input id="colsA" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                    <!-- Matrix B Dimensions -->
+                    <div id="matrixBControls" class="p-2 border border-gray-700 rounded-lg">
+                        <h3 class="font-semibold text-lime-400">Matrix B</h3>
+                        <div>
+                            <label for="rowsB" class="block text-sm font-medium text-gray-300">Rows: <span id="rowsBValue">2</span></label>
+                            <input id="rowsB" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <label for="colsB" class="block text-sm font-medium text-gray-300">Columns: <span id="colsBValue">2</span></label>
+                            <input id="colsB" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                    <!-- Operation -->
+                    <div>
+                        <label for="operation" class="block text-sm font-medium text-gray-300">Operation</label>
+                        <select id="operation" class="w-full mt-1 bg-gray-700 border border-gray-600 text-white rounded-lg p-2 focus:ring-cyan-500 focus:border-cyan-500">
+                            <option value="add">A + B (Addition)</option>
+                            <option value="subtract">A - B (Subtraction)</option>
+                            <option value="multiply">A * B (Multiplication)</option>
+                            <option value="determinant">det(A) (Determinant of A)</option>
+                            <option value="inverse">inv(A) (Inverse of A)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <footer class="mt-auto pt-4">
+                <p class="text-xs text-gray-500 text-center">NitaD, Univ Paris-Saclay, 2025</p>
+            </footer>
+        </div>
+
+        <!-- Draggable Handle -->
+        <div id="resize-handle"></div>
+
+        <!-- Right Canvas Panel -->
+        <div id="right-panel">
+            <div class="w-full h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Matrix A -->
+                <div id="matrixAContainer">
+                    <h2 class="text-xl font-bold text-cyan-400">Matrix A</h2>
+                    <div id="gridA" class="matrix-grid"></div>
+                </div>
+                <!-- Matrix B -->
+                <div id="matrixBContainer">
+                    <h2 class="text-xl font-bold text-lime-400">Matrix B</h2>
+                    <div id="gridB" class="matrix-grid"></div>
+                </div>
+                <!-- Result -->
+                <div>
+                    <h2 class="text-xl font-bold text-rose-400">Result</h2>
+                    <div id="resultContainer" class="mt-2 text-white"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const leftPanel = document.getElementById('left-panel');
+            const rightPanel = document.getElementById('right-panel');
+            const resizeHandle = document.getElementById('resize-handle');
+            
+            const rowsASlider = document.getElementById('rowsA');
+            const colsASlider = document.getElementById('colsA');
+            const rowsBSlider = document.getElementById('rowsB');
+            const colsBSlider = document.getElementById('colsB');
+            
+            const rowsAValue = document.getElementById('rowsAValue');
+            const colsAValue = document.getElementById('colsAValue');
+            const rowsBValue = document.getElementById('rowsBValue');
+            const colsBValue = document.getElementById('colsBValue');
+
+            const operationSelector = document.getElementById('operation');
+            
+            const gridA = document.getElementById('gridA');
+            const gridB = document.getElementById('gridB');
+            const resultContainer = document.getElementById('resultContainer');
+            const matrixBContainer = document.getElementById('matrixBContainer');
+            const matrixBControls = document.getElementById('matrixBControls');
+
+            // --- State ---
+            let isResizing = false;
+
+            // --- Matrix Grid Generation ---
+            function generateMatrixGrid(container, rows, cols, idPrefix) {
+                container.innerHTML = '';
+                container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const cell = document.createElement('input');
+                        cell.type = 'number';
+                        cell.className = 'matrix-cell';
+                        cell.id = `${idPrefix}-${r}-${c}`;
+                        cell.value = Math.floor(Math.random() * 10); // Pre-fill with random data
+                        cell.addEventListener('input', calculate); // Auto-calculate on input change
+                        container.appendChild(cell);
+                    }
+                }
+            }
+
+            // --- UI Update Logic ---
+            function updateUI() {
+                const op = operationSelector.value;
+                const rowsA = parseInt(rowsASlider.value);
+                const colsA = parseInt(colsASlider.value);
+                
+                rowsAValue.textContent = rowsA;
+                colsAValue.textContent = colsA;
+
+                // Enforce constraints based on operation
+                if (op === 'add' || op === 'subtract') {
+                    rowsBSlider.value = rowsA;
+                    colsBSlider.value = colsA;
+                    rowsBSlider.disabled = true;
+                    colsBSlider.disabled = true;
+                } else if (op === 'multiply') {
+                    rowsBSlider.value = colsA;
+                    rowsBSlider.disabled = true;
+                    colsBSlider.disabled = false;
+                } else if (op === 'determinant' || op === 'inverse') {
+                    colsASlider.value = rowsA;
+                    colsASlider.disabled = true;
+                } else {
+                    rowsBSlider.disabled = false;
+                    colsBSlider.disabled = false;
+                    colsASlider.disabled = false;
+                }
+
+                rowsBValue.textContent = rowsBSlider.value;
+                colsBValue.textContent = colsBSlider.value;
+
+                // Show/Hide Matrix B based on operation
+                const needsB = ['add', 'subtract', 'multiply'].includes(op);
+                matrixBContainer.style.display = needsB ? 'block' : 'none';
+                matrixBControls.style.display = needsB ? 'block' : 'none';
+
+                generateMatrixGrid(gridA, rowsASlider.value, colsASlider.value, 'A');
+                if (needsB) {
+                    generateMatrixGrid(gridB, rowsBSlider.value, colsBSlider.value, 'B');
+                } else {
+                    gridB.innerHTML = '';
+                }
+                calculate(); // Calculate immediately after UI update
+            }
+            
+            // --- Matrix Math ---
+            function getMatrix(rows, cols, prefix) {
+                const matrix = [];
+                for (let r = 0; r < rows; r++) {
+                    const row = [];
+                    for (let c = 0; c < cols; c++) {
+                        const cell = document.getElementById(`${prefix}-${r}-${c}`);
+                        row.push(parseFloat(cell.value) || 0);
+                    }
+                    matrix.push(row);
+                }
+                return matrix;
+            }
+
+            function displayResult(result) {
+                resultContainer.innerHTML = '';
+                if (typeof result === 'number') {
+                    const displayText = Number.isInteger(result) ? result : result.toFixed(4);
+                    resultContainer.innerHTML = `<div class="result-cell text-2xl">${displayText}</div>`;
+                } else if (typeof result === 'string') {
+                     resultContainer.innerHTML = `<div class="p-2 text-rose-400">${result}</div>`;
+                }
+                else { // It's a matrix
+                    const grid = document.createElement('div');
+                    grid.className = 'matrix-grid';
+                    grid.style.gridTemplateColumns = `repeat(${result[0].length}, 1fr)`;
+                    for (let r = 0; r < result.length; r++) {
+                        for (let c = 0; c < result[0].length; c++) {
+                            const cell = document.createElement('div');
+                            cell.className = 'result-cell';
+                            const value = result[r][c];
+                            // Check if the number is an integer (or very close to one)
+                            if (Math.abs(value - Math.round(value)) < 1e-9) {
+                                cell.textContent = Math.round(value);
+                            } else {
+                                cell.textContent = value.toFixed(2);
+                            }
+                            grid.appendChild(cell);
+                        }
+                    }
+                    resultContainer.appendChild(grid);
+                }
+            }
+
+            function calculate() {
+                const op = operationSelector.value;
+                const rowsA = parseInt(rowsASlider.value);
+                const colsA = parseInt(colsASlider.value);
+                const matA = getMatrix(rowsA, colsA, 'A');
+
+                if (['add', 'subtract', 'multiply'].includes(op)) {
+                    const rowsB = parseInt(rowsBSlider.value);
+                    const colsB = parseInt(colsBSlider.value);
+                    const matB = getMatrix(rowsB, colsB, 'B');
+                    
+                    if (op === 'add') displayResult(math.add(matA, matB));
+                    if (op === 'subtract') displayResult(math.subtract(matA, matB));
+                    if (op === 'multiply') displayResult(math.multiply(matA, matB));
+
+                } else if (op === 'determinant') {
+                    if (rowsA !== colsA) { displayResult("Matrix must be square."); return; }
+                    displayResult(math.determinant(matA));
+                } else if (op === 'inverse') {
+                    if (rowsA !== colsA) { displayResult("Matrix must be square."); return; }
+                    try {
+                        displayResult(math.inv(matA));
+                    } catch (e) {
+                        displayResult("Matrix is not invertible (determinant is zero).");
+                    }
+                }
+            }
+
+            // --- Event Listeners ---
+            [rowsASlider, colsASlider, rowsBSlider, colsBSlider, operationSelector].forEach(el => {
+                el.addEventListener('input', updateUI);
+            });
+
+            // Resizing logic
+            resizeHandle.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; });
+            document.addEventListener('mousemove', (e) => { if (isResizing) { const newWidth = e.clientX; if (newWidth > 250 && newWidth < window.innerWidth - 300) { leftPanel.style.flexBasis = `${newWidth}px`; } } });
+            document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = 'default'; document.body.style.userSelect = ''; });
+            
+            // --- Initial Setup ---
+            // Using math.js for robust matrix calculations
+            const mathScript = document.createElement('script');
+            mathScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js';
+            document.head.appendChild(mathScript);
+            mathScript.onload = () => {
+                updateUI();
+            };
+        });
+    </script>
+</body>
+</html>
