@@ -14,6 +14,27 @@
             background-color: #0c0a09;
             overflow: hidden;
         }
+        /* Matrix Intro Styles */
+        #matrix-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+        #matrix-intro.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #app-wrapper {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            height: 100vh;
+        }
         .main-container {
             display: flex;
             height: calc(100vh - 65px);
@@ -84,78 +105,73 @@
 </head>
 <body class="text-gray-200 flex flex-col h-screen">
 
-    <header class="text-center py-4 bg-gray-900/80 border-b border-gray-700/50" style="flex-shrink: 0;">
-        <h1 class="text-2xl md:text-3xl text-white">Matrix Operations</h1>
-    </header>
+    <canvas id="matrix-intro"></canvas>
 
-    <div class="main-container">
-        <!-- Left Control Panel -->
-        <div id="left-panel">
-            <div>
-                <h2 class="text-lg font-semibold text-white mb-3 border-b border-gray-600 pb-2">Controls</h2>
-                <div class="space-y-4">
-                    <!-- Matrix A Dimensions -->
-                    <div class="p-2 border border-gray-700 rounded-lg">
-                        <h3 class="font-semibold text-cyan-400">Matrix A</h3>
-                        <div>
-                            <label for="rowsA" class="block text-sm font-medium text-gray-300">Rows: <span id="rowsAValue">2</span></label>
-                            <input id="rowsA" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                        <div>
-                            <label for="colsA" class="block text-sm font-medium text-gray-300">Columns: <span id="colsAValue">2</span></label>
-                            <input id="colsA" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                    </div>
-                    <!-- Matrix B Dimensions -->
-                    <div id="matrixBControls" class="p-2 border border-gray-700 rounded-lg">
-                        <h3 class="font-semibold text-lime-400">Matrix B</h3>
-                        <div>
-                            <label for="rowsB" class="block text-sm font-medium text-gray-300">Rows: <span id="rowsBValue">2</span></label>
-                            <input id="rowsB" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                        <div>
-                            <label for="colsB" class="block text-sm font-medium text-gray-300">Columns: <span id="colsBValue">2</span></label>
-                            <input id="colsB" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                    </div>
-                    <!-- Operation -->
-                    <div>
-                        <label for="operation" class="block text-sm font-medium text-gray-300">Operation</label>
-                        <select id="operation" class="w-full mt-1 bg-gray-700 border border-gray-600 text-white rounded-lg p-2 focus:ring-cyan-500 focus:border-cyan-500">
-                            <option value="add">A + B (Addition)</option>
-                            <option value="subtract">A - B (Subtraction)</option>
-                            <option value="multiply">A * B (Multiplication)</option>
-                            <option value="determinant">det(A) (Determinant of A)</option>
-                            <option value="inverse">inv(A) (Inverse of A)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <footer class="mt-auto pt-4">
-                <p class="text-xs text-gray-500 text-center">NitaD, Univ Paris-Saclay, 2025</p>
-            </footer>
-        </div>
+    <div id="app-wrapper">
+        <header class="text-center py-4 bg-gray-900/80 border-b border-gray-700/50" style="flex-shrink: 0;">
+            <h1 class="text-2xl md:text-3xl text-white">Matrix Operations</h1>
+        </header>
 
-        <!-- Draggable Handle -->
-        <div id="resize-handle"></div>
-
-        <!-- Right Canvas Panel -->
-        <div id="right-panel">
-            <div class="w-full h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Matrix A -->
-                <div id="matrixAContainer">
-                    <h2 class="text-xl font-bold text-cyan-400">Matrix A</h2>
-                    <div id="gridA" class="matrix-grid"></div>
-                </div>
-                <!-- Matrix B -->
-                <div id="matrixBContainer">
-                    <h2 class="text-xl font-bold text-lime-400">Matrix B</h2>
-                    <div id="gridB" class="matrix-grid"></div>
-                </div>
-                <!-- Result -->
+        <div class="main-container">
+            <div id="left-panel">
                 <div>
-                    <h2 class="text-xl font-bold text-rose-400">Result</h2>
-                    <div id="resultContainer" class="mt-2 text-white"></div>
+                    <h2 class="text-lg font-semibold text-white mb-3 border-b border-gray-600 pb-2">Controls</h2>
+                    <div class="space-y-4">
+                        <div class="p-2 border border-gray-700 rounded-lg">
+                            <h3 class="font-semibold text-cyan-400">Matrix A</h3>
+                            <div>
+                                <label for="rowsA" class="block text-sm font-medium text-gray-300">Rows: <span id="rowsAValue">2</span></label>
+                                <input id="rowsA" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                            <div>
+                                <label for="colsA" class="block text-sm font-medium text-gray-300">Columns: <span id="colsAValue">2</span></label>
+                                <input id="colsA" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                        <div id="matrixBControls" class="p-2 border border-gray-700 rounded-lg">
+                            <h3 class="font-semibold text-lime-400">Matrix B</h3>
+                            <div>
+                                <label for="rowsB" class="block text-sm font-medium text-gray-300">Rows: <span id="rowsBValue">2</span></label>
+                                <input id="rowsB" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                            <div>
+                                <label for="colsB" class="block text-sm font-medium text-gray-300">Columns: <span id="colsBValue">2</span></label>
+                                <input id="colsB" type="range" min="1" max="8" value="2" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="operation" class="block text-sm font-medium text-gray-300">Operation</label>
+                            <select id="operation" class="w-full mt-1 bg-gray-700 border border-gray-600 text-white rounded-lg p-2 focus:ring-cyan-500 focus:border-cyan-500">
+                                <option value="add">A + B (Addition)</option>
+                                <option value="subtract">A - B (Subtraction)</option>
+                                <option value="multiply">A * B (Multiplication)</option>
+                                <option value="determinant">det(A) (Determinant of A)</option>
+                                <option value="inverse">inv(A) (Inverse of A)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <footer class="mt-auto pt-4">
+                    <p class="text-xs text-gray-500 text-center">NitaD, Univ Paris-Saclay, 2025</p>
+                </footer>
+            </div>
+
+            <div id="resize-handle"></div>
+
+            <div id="right-panel">
+                <div class="w-full h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div id="matrixAContainer">
+                        <h2 class="text-xl font-bold text-cyan-400">Matrix A</h2>
+                        <div id="gridA" class="matrix-grid"></div>
+                    </div>
+                    <div id="matrixBContainer">
+                        <h2 class="text-xl font-bold text-lime-400">Matrix B</h2>
+                        <div id="gridB" class="matrix-grid"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-rose-400">Result</h2>
+                        <div id="resultContainer" class="mt-2 text-white"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,6 +179,70 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Matrix Intro Animation ---
+            const introCanvas = document.getElementById('matrix-intro');
+            const appWrapper = document.getElementById('app-wrapper');
+            const ctx = introCanvas.getContext('2d');
+
+            introCanvas.width = window.innerWidth;
+            introCanvas.height = window.innerHeight;
+
+            const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+            const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const nums = '0123456789';
+            const alphabet = katakana + latin + nums;
+
+            const fontSize = 16;
+            // Determine number of columns based on screen width. A lower divisor means more columns.
+            const columnCount = Math.floor(introCanvas.width / 20); 
+            // 'rainDrops' stores the current y-position (character index) for each column.
+            const rainDrops = Array.from({ length: columnCount }).fill(1);
+            // Create an array to hold the random x-coordinate for each column stream.
+            const columnX = Array.from({ length: columnCount }, () => Math.random() * introCanvas.width);
+
+            let animationInterval;
+
+            const drawMatrix = () => {
+                // The semi-transparent black background creates the fading trail effect
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, introCanvas.width, introCanvas.height);
+                
+                ctx.fillStyle = '#0F0'; // Green text
+                ctx.font = `${fontSize}px monospace`;
+
+                for (let i = 0; i < rainDrops.length; i++) {
+                    const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                    
+                    // Use the pre-randomized x-coordinate for this column
+                    const x = columnX[i];
+                    const y = rainDrops[i] * fontSize;
+                    
+                    ctx.fillText(text, x, y);
+
+                    // If the stream is off-screen and a random chance is met, reset it to the top.
+                    // This makes streams of different lengths and adds to the chaotic effect.
+                    if (y > introCanvas.height && Math.random() > 0.975) {
+                        rainDrops[i] = 0;
+                    }
+                    rainDrops[i]++;
+                }
+            };
+            
+            animationInterval = setInterval(drawMatrix, 40);
+
+            // End intro after a few seconds
+            setTimeout(() => {
+                introCanvas.classList.add('hidden');
+                clearInterval(animationInterval); // Stop the animation to save resources
+                appWrapper.style.display = 'flex'; // Show the main application
+                
+                // Fully remove the canvas after the fade-out transition
+                setTimeout(() => {
+                     introCanvas.style.display = 'none';
+                }, 1000);
+
+            }, 2500); // Show for 2.5 seconds
+
             // --- DOM Element References ---
             const leftPanel = document.getElementById('left-panel');
             const rightPanel = document.getElementById('right-panel');
@@ -296,6 +376,9 @@
             }
 
             function calculate() {
+                // guard against running before math.js is loaded
+                if (typeof math === 'undefined') return;
+
                 const op = operationSelector.value;
                 const rowsA = parseInt(rowsASlider.value);
                 const colsA = parseInt(colsASlider.value);
